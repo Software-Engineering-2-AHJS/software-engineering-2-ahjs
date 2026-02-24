@@ -28,8 +28,8 @@ export default function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div>
+    <form className="login-form" onSubmit={handleSubmit}>
+      <div className="email-field">
         <input
           type="text"
           name="email"
@@ -40,7 +40,7 @@ export default function LoginForm() {
         />
       </div>
 
-      <div>
+      <div className="password-field">
         <input
           type="password"
           name="password"
@@ -51,7 +51,9 @@ export default function LoginForm() {
         />
       </div>
 
-      <button type="submit">Login</button>
+      <button className="submit-button" type="submit">
+        Login
+      </button>
     </form>
   );
 }
