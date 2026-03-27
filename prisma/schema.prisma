@@ -11,6 +11,12 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EntryType {
+  INCOME
+  EXPENSE
 }
 
 model User {
@@ -28,6 +34,14 @@ model User {
   banned     Boolean?  @default(false)
   banReason  String?
   banExpires DateTime?
+
+  // Accounting-specific extensions
+  accountantId String?
+  accountant   User?   @relation("AccountantClients", fields: [accountantId], references: [id])
+  clients      User[]  @relation("AccountantClients")
+
+  invoices Invoice[]
+  entries  BookkeepingEntry[]
 
   @@unique([email])
   @@map("user")
@@ -81,4 +95,52 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+model Invoice {
+  id         String @id @default(cuid())
+  fileUrl    String
+  rawOcrData Json?
+
+  vendorName    String?
+  invoiceNumber String?
+  invoiceDate   DateTime?
+  dueDate       DateTime?
+  totalAmount   Decimal?  @db.Decimal(10, 2)
+  taxAmount     Decimal?  @db.Decimal(10, 2)
+  currency      String    @default("USD")
+
+  status String @default("PENDING") // PENDING, CONFIRMED, REJECTED
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  bookkeepingEntry BookkeepingEntry?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("invoice")
+}
+
+model BookkeepingEntry {
+  id           String    @id @default(cuid())
+  type         EntryType
+  date         DateTime
+  counterparty String
+  total        Decimal   @db.Decimal(10, 2)
+  tax          Decimal   @db.Decimal(10, 2)
+  category     String?
+  notes        String?
+
+  invoiceId String?  @unique
+  invoice   Invoice? @relation(fields: [invoiceId], references: [id])
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("bookkeeping_entry")
 }
