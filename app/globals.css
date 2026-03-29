@@ -6,7 +6,7 @@
     --border-color: var(--foreground);
 }
 
-@media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: light) {
     :root {
         --background: #0a0a0a;
         --foreground: #ededed;
@@ -101,7 +101,7 @@ a {
     display: flex;
     justify-content: center;
     align-items: center;
-    flex-direction: colomn;
+    flex-direction: column;
 }
 
 /*client login form*/
@@ -231,4 +231,419 @@ a {
 .role-switch:hover {
     transform: translateY(-1px);
     opacity: 1;
+}
+
+.app {
+    min-height: 100vh;
+    display: flex;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.sidebar {
+    width: 200px;
+    min-height: 100vh;
+    border-right: 3px solid var(--foreground);
+    padding: 2rem 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: var(--background);
+    overflow: hidden;
+    transition:
+        width 220ms ease,
+        padding 220ms ease,
+        transform 220ms ease;
+}
+
+.sidebar.open {
+    width: 300px;
+    padding: 2rem 1rem;
+}
+
+.sidebar.closed {
+    width: 20px;
+    padding: 0rem 0.8rem;
+}
+
+/*.logo {
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 34px;
+    letter-spacing: -1.8px;
+    text-transform: uppercase;
+}*/
+
+.sidebar-top-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.sidebar-toggle {
+    border: 0;
+    background: var(--background-color);
+    color: var(--foreground);
+    font-size: 60px;
+    line-height: 3;
+    cursor: pointer;
+    transition: transform 160ms ease;
+}
+
+.sidebar-toggle:hover {
+    transform: translateX(-2px) scale(1.08);
+}
+
+.sidebar.closed .sidebar-toggle:hover {
+    transform: translateX(2px) scale(1.08);
+}
+
+.sidebar nav {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.sidebar nav a {
+    vertical-align: top;
+    font-size: 17px;
+    letter-spacing: -0.05em;
+    opacity: 0.7;
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+        transform 160ms ease,
+        opacity 160ms ease;
+}
+
+.sidebar nav a:hover {
+    transform: translateX(6px);
+    opacity: 1;
+}
+
+.sidebar nav a.active {
+    opacity: 1;
+    font-weight: 600;
+}
+
+.sidebar.closed nav a {
+    overflow: hidden;
+    text-overflow: clip;
+}
+
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.stat-card {
+    border: 3px solid var(--foreground);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-height: 100px;
+    justify-content: space-between;
+}
+
+.stat-label {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: -0.04em;
+    opacity: 0.7;
+}
+
+.stat-card strong {
+    font-size: 28px;
+    line-height: 1;
+    letter-spacing: -0.08em;
+    font-weight: 600;
+}
+
+.main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.topbar {
+    height: 84px;
+    border-bottom: 3px solid var(--foreground);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: -0.05em;
+}
+
+.topbar a {
+    opacity: 0.7;
+    transition:
+        transform 160ms ease,
+        opacity 160ms ease;
+}
+
+.topbar a:hover {
+    transform: translateX(4px);
+    opacity: 1;
+}
+
+.content {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.content-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.content-header h1 {
+    font-size: 45px;
+    font-weight: 600;
+    line-height: 48px;
+    letter-spacing: -2px;
+    text-wrap: balance;
+}
+
+.content-header button {
+    border: 0;
+    background: var(--background-color);
+    color: var(--foreground);
+    font-size: 17px;
+    text-transform: uppercase;
+    letter-spacing: -0.05em;
+    transition: transform 160ms ease;
+    cursor: pointer;
+}
+
+.content-header button:hover {
+    transform: translateX(6px) scale(1.08);
+}
+
+.content-header button:active {
+    transform: translateX(4px) scale(1.04);
+}
+
+/* =========================
+   TABLE
+   ========================= */
+
+.invoice-table {
+    width: 90%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    align-self: center;
+    margin-top: 15px;
+}
+
+.invoice-table thead th {
+    text-align: center;
+    font-size: 15px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: -0.03em;
+    padding: 1rem 0.2rem;
+    border-bottom: 3px solid var(--foreground);
+}
+
+.invoice-table tbody td {
+    padding: 1rem 0.5rem;
+    border-bottom: 3px solid var(--foreground);
+    font-size: 16px;
+    vertical-align: middle;
+}
+
+.invoice-table tbody tr {
+    transition: background-color 160ms ease;
+}
+
+.invoice-table tbody tr:hover {
+    background-color: color-mix(in srgb, var(--foreground) 6%, transparent);
+}
+
+/* =========================
+   STATUS
+   ========================= */
+
+.status {
+    display: inline-block;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: -0.04em;
+    padding: 0.25rem 0.5rem;
+    border: 2px solid var(--foreground);
+}
+
+.status.approved {
+    opacity: 1;
+}
+
+.status.draft {
+    opacity: 0.75;
+}
+
+.status.processing {
+    opacity: 0.55;
+}
+
+/* =========================
+   MODAL
+   ========================= */
+
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    z-index: 1000;
+}
+
+.modal {
+    width: min(720px, 100%);
+    background: var(--background);
+    color: var(--foreground);
+    border: 3px solid var(--foreground);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.modal-title {
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 34px;
+    letter-spacing: -1.5px;
+}
+
+/* =========================
+   FORM
+   ========================= */
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.label {
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: -0.04em;
+    opacity: 0.8;
+}
+
+.form input,
+.form select {
+    padding: 0.6rem 0.3rem;
+    border: none;
+    border-bottom: 3px solid var(--foreground);
+    outline: none;
+    background: var(--background-color);
+    color: var(--foreground);
+    font-size: 18px;
+    transition: transform 160ms ease;
+}
+
+.form input:hover,
+.form select:hover {
+    transform: translateY(-4px);
+}
+
+.form input:focus,
+.form select:focus {
+    transform: translateY(-2px);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.3rem;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.form-actions button,
+.button-secondary {
+    border: 0;
+    background: var(--background-color);
+    color: var(--foreground);
+    font-size: 17px;
+    text-transform: uppercase;
+    letter-spacing: -0.05em;
+    transition: transform 160ms ease;
+    cursor: pointer;
+}
+
+.form-actions button:hover,
+.button-secondary:hover {
+    transform: translateX(6px) scale(1.08);
+}
+
+.form-actions button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
+@media (max-width: 900px) {
+    .app {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        min-height: auto;
+        border-right: none;
+        border-bottom: 3px solid var(--foreground);
+    }
+
+    .content-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .invoice-table {
+        font-size: 14px;
+    }
 }
