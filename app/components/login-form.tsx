@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { authClient } from "@/app/auth-client";
+import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();
 
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
@@ -22,9 +24,7 @@ export default function LoginForm() {
 
     // Successful sign in
     console.log("Signed in:", data);
-    alert("Login successful!");
-    // Clear password field after successful login
-    setPassword("");
+    router.push("/dashboard");
   };
 
   return (
