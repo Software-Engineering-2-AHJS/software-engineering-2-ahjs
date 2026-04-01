@@ -4,13 +4,16 @@ import Link from "next/link";
 
 export default function Login() {
   return (
-    <div>
-      <h1>Select Login Type</h1>
-
-      <div>
-        <Link href="/login/accountant">Accountant Login</Link>
-
-        <Link href="/login/client">Client Login</Link>
+    <div className="main-container">
+      <h1 className="h1">Login</h1>
+      <div className="divider" aria-hidden="true"></div>
+      <div className="outer-div">
+        <div className="inner-div">
+          <Link href="/login/accountant">Accountant</Link>
+        </div>
+        <div className="inner-div">
+          <Link href="/login/client">Client</Link>
+        </div>
       </div>
     </div>
   );

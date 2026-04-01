@@ -1,46 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import LoginForm from "@/app/components/login-form";
+import Link from "next/link";
 
 export default function ClientLogin() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-
-  const handleLogin = (e: React.SubmitEvent) => {
-    e.preventDefault();
-    // Minimal placeholder behavior
-    console.log("Client Login clicked:", { username, password });
-  };
-
   return (
-    <div>
-      <h1>Client Login</h1>
+    <div className="client-login-form">
+      <div className="role-panel">
+        <h1>
+          Client <br /> Login
+        </h1>
+        <Link className="role-switch" href="/login/accountant">
+          Switch to Accountant
+        </Link>
+      </div>
+      <div className="divider" aria-hidden="true"></div>
 
-      <form onSubmit={handleLogin}>
-        <div>
-          <input
-            id="username"
-            type="text"
-            value={username}
-            placeholder="Username"
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
-        </div>
-
-        <div>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            placeholder="Password"
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-
-        <button type="submit">Login</button>
-      </form>
+      <LoginForm />
     </div>
   );
 }

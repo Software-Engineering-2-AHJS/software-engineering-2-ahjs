@@ -1,0 +1,4 @@
+[tools]
+node = "24"
+"npm:@mariozechner/pi-coding-agent" = "latest"
+pnpm = "latest"
