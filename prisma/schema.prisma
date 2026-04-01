@@ -40,7 +40,7 @@ model User {
   clients      User[]  @relation("AccountantClients")
 
   invoices Invoice[]
-  entries  BookkeepingEntry[]
+
 
   @@unique([email])
   @@map("user")
@@ -101,45 +101,51 @@ model Invoice {
   fileUrl    String
   rawOcrData Json?
 
-  vendorName    String?
-  invoiceNumber String?
-  invoiceDate   DateTime?
-  dueDate       DateTime?
-  totalAmount   Decimal?  @db.Decimal(10, 2)
-  taxAmount     Decimal?  @db.Decimal(10, 2)
-  currency      String    @default("USD")
+  type     EntryType? // Income or Expense??
+  category String?
 
-  status String @default("PENDING") // PENDING, CONFIRMED, REJECTED
+  vendorName      String?
+  businessID      String? // Y-tunnus, Business Id
+  vendorVATNumber String? // ALV number (FI + business ID)
+
+  invoiceNumber   String?
+  referenceNumber String? // Finnish reference number (Viitenumero)
+
+  invoiceDate DateTime?
+  dueDate     DateTime?
+
+  paymentTermsDays Int? // e.g. 14 or 30 days
+
+  iban String? // vendor IBAN
+  bic  String? // bank BIC/SWIFT
+
+  // Billing (invoice recipient)
+
+  billingName       String?
+  billingAddress    String?
+  billingPostalCode String?
+  billingCity       String?
+  billingCountry    String?
+
+  deliveryDate String? // delivery date of the service/product
+
+  subtotalAmount Decimal? @db.Decimal(10, 2)
+  taxAmount      Decimal? @db.Decimal(10, 2)
+  totalAmount    Decimal? @db.Decimal(10, 2)
+
+  vatRate Decimal? @db.Decimal(5, 2) // e.g. 24, 14, 10
+
+  currency String @default("EUR")
+
+  notes    String?
+  status   String? // draft, sent, paid, overdue
+  paidDate DateTime?
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
-
-  bookkeepingEntry BookkeepingEntry?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("invoice")
-}
-
-model BookkeepingEntry {
-  id           String    @id @default(cuid())
-  type         EntryType
-  date         DateTime
-  counterparty String
-  total        Decimal   @db.Decimal(10, 2)
-  tax          Decimal   @db.Decimal(10, 2)
-  category     String?
-  notes        String?
-
-  invoiceId String?  @unique
-  invoice   Invoice? @relation(fields: [invoiceId], references: [id])
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("bookkeeping_entry")
 }
