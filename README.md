@@ -2,6 +2,15 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+Create a `.env` file with at least:
+
+```bash
+DATABASE_URL=postgres://...
+GEMINI_API_KEY=your_api_key
+# optional
+GEMINI_MODEL=gemini-2.5-flash
+```
+
 First, run the development server:
 
 ```bash
@@ -17,6 +26,16 @@ bun dev
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
+## Invoice PDF Extraction
+
+`POST /api/invoice` accepts a PDF request body, stores the raw file, sends it to Gemini, and saves extracted invoice fields into Prisma for the authenticated user.
+
+Expected upload headers:
+
+```text
+Content-Type: application/pdf
+```
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
