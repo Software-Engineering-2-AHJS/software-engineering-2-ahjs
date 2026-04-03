@@ -1,6 +1,6 @@
 
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type InvoiceStatus = "Approved" | "Draft" | "Processing";
 type InvoiceType = "Income" | "Expense";
@@ -120,8 +120,8 @@ const mockInvoices: Invoice[] = [
   },
 ];
 
-function getInvoice(): Invoice[] {
-  return mockInvoices;
+async function getInvoice(): Promise<Invoice[]> {
+  return (await fetch("/api/invoice")).json();
 }
 
 function UploadInvoiceModal({
@@ -238,7 +238,10 @@ function UploadInvoiceModal({
   );
 }
 export default function Dashboard() {
-  const [invoices, setInvoices] = useState<Invoice[]>(getInvoice());
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  useEffect(() => {
+    getInvoice().then((x) => setInvoices(x));
+  }, []);
 
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
