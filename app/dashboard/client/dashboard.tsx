@@ -14,8 +14,14 @@ interface Invoice {
   status: InvoiceStatus;
 }
 
-// --- MOCK INITIAL DATA ---
-const MOCK_INVOICES: Invoice[] = [
+type UploadInvoiceData = {
+  counterparty: string;
+  type: InvoiceType;
+  amount: number;
+  status: InvoiceStatus;
+};
+
+const mockInvoices: Invoice[] = [
   {
     date: "03/01/2026",
     counterparty: "Nordic Timber Oy",
@@ -42,13 +48,148 @@ const MOCK_INVOICES: Invoice[] = [
   },
 ];
 
+function getInvoice(): Invoice[] {
+  return mockInvoices;
+}
+
+function UploadInvoiceModal({
+  open,
+  onClose,
+  onSubmit,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (data: UploadInvoiceData) => void;
+}) {
+  const [counterparty, setCounterparty] = useState<string>("");
+  const [type, setType] = useState<InvoiceType>("Income");
+  const [amount, setAmount] = useState<string>("");
+  const [status, setStatus] = useState<InvoiceStatus>("Draft");
+
+  const canSubmit =
+    counterparty.trim().length > 0 &&
+    Number.isFinite(Number(amount)) &&
+    Number(amount) > 0;
+
+  if (!open) return null;
+
+  return (
+    <div className="modal-backdrop" role="dialog" aria-modal="true">
+      <div className="modal">
+        <div className="modal-header">
+          <h2 className="modal-title">Upload Invoice</h2>
+          <button type="button" className="button-secondary" onClick={onClose}>
+            Close
+          </button>
+          <input
+            type="file"
+            accept="application/pdf"
+            onChange={async (x) => {
+              if (x.target.files) {
+                for (const file of x.target.files) {
+                  fetch("/api/invoice", {
+                    body: await file.bytes(),
+                    method: "POST",
+                  });
+                }
+              }
+            }}
+          />
+        </div>
+
+        <form
+          className="form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!canSubmit) return;
+
+            onSubmit({
+              counterparty: counterparty.trim(),
+              type,
+              amount: Number(amount),
+              status,
+            });
+
+            setCounterparty("");
+            setType("Income");
+            setAmount("");
+            setStatus("Draft");
+            onClose();
+          }}
+        >
+          <label className="field">
+            <span className="label">Counterparty</span>
+            <input
+              value={counterparty}
+              onChange={(e) => setCounterparty(e.target.value)}
+              placeholder="e.g. Acme Inc."
+              autoFocus
+            />
+          </label>
+
+          <div className="form-row">
+            <label className="field">
+              <span className="label">Type</span>
+              <select
+                value={type}
+                onChange={(e) => setType(e.target.value as InvoiceType)}
+              >
+                <option value="Income">Income</option>
+                <option value="Expense">Expense</option>
+              </select>
+            </label>
+
+            <label className="field">
+              <span className="label">Amount</span>
+              <input
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                inputMode="decimal"
+                placeholder="e.g. 250"
+              />
+            </label>
+          </div>
+
+          <label className="field">
+            <span className="label">Status</span>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value as InvoiceStatus)}
+            >
+              <option value="Approved">Approved</option>
+              <option value="Draft">Draft</option>
+              <option value="Processing">Processing</option>
+            </select>
+          </label>
+
+          <div className="form-actions">
+            <button type="submit" disabled={!canSubmit}>
+              Add invoice
+            </button>
+            <button
+              type="button"
+              className="button-secondary"
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
 export default function Dashboard() {
-  const [invoices, setInvoices] = useState<Invoice[]>(MOCK_INVOICES);
+  // Combine Team's data fetching with your state
+  const [invoices, setInvoices] = useState<Invoice[]>(getInvoice());
+
+  // Your UI states
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [currentView, setCurrentView] = useState<"dashboard" | "settings">(
     "dashboard",
   );
   const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
 
   // OCR & File Upload States
   const [isProcessing, setIsProcessing] = useState(false);
@@ -92,6 +233,18 @@ export default function Dashboard() {
     setPreviewUrl(null);
     setExtractedData(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleAddInvoice = (data: UploadInvoiceData) => {
+    const newInv: Invoice = {
+      date: new Date().toLocaleDateString(),
+      counterparty: data.counterparty,
+      type: data.type,
+      amount: data.amount,
+      total: data.amount,
+      status: data.status,
+    };
+    setInvoices((prev) => [newInv, ...prev]);
   };
 
   return (
@@ -173,13 +326,22 @@ export default function Dashboard() {
                     className="hidden-input"
                     accept="image/*,.pdf"
                   />
-                  <button
-                    type="button"
-                    className="upload-btn"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    + UPLOAD INVOICE
-                  </button>
+                  <div className="header-actions">
+                    <button
+                      type="button"
+                      className="upload-btn"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      + UPLOAD INVOICE
+                    </button>
+                    <button
+                      type="button"
+                      className="button-secondary"
+                      onClick={() => setModalOpen(true)}
+                    >
+                      + ADD MANUALLY
+                    </button>
+                  </div>
                 </div>
 
                 <table className="invoice-table">
@@ -232,6 +394,23 @@ export default function Dashboard() {
           </div>
         </main>
       </div>
+
+      <UploadInvoiceModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSubmit={(data) => {
+          const newInv: Invoice = {
+            date: new Date().toLocaleDateString(),
+            counterparty: data.counterparty,
+            type: data.type,
+            amount: data.amount,
+            total: data.amount,
+            status: data.status,
+          };
+          setInvoices((prev) => [newInv, ...prev]);
+          setModalOpen(false);
+        }}
+      />
 
       {previewUrl && (
         <div className="modal-backdrop">

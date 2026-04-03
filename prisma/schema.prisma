@@ -13,6 +13,11 @@ datasource db {
   provider = "postgresql"
 }
 
+enum EntryType {
+  INCOME
+  EXPENSE
+}
+
 model User {
   id            String    @id
   name          String
@@ -28,6 +33,13 @@ model User {
   banned     Boolean?  @default(false)
   banReason  String?
   banExpires DateTime?
+
+  // Accounting-specific extensions
+  accountantId String?
+  accountant   User?   @relation("AccountantClients", fields: [accountantId], references: [id])
+  clients      User[]  @relation("AccountantClients")
+
+  invoices Invoice[]
 
   @@unique([email])
   @@map("user")
@@ -81,4 +93,75 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+enum RawInvoiceKind {
+  JPEG
+  PNG
+  PDF
+}
+
+model RawInvoice {
+  id String @id @default(cuid())
+
+  type     RawInvoiceKind
+  contents Bytes
+
+  invoice Invoice?
+}
+
+model Invoice {
+  id         String @id @default(cuid())
+  rawOcrData Json?
+
+  rawInvoice   RawInvoice @relation(fields: [rawInvoiceId], references: [id])
+  rawInvoiceId String     @unique
+
+  type     EntryType? // Income or Expense??
+  category String?
+
+  vendorName      String?
+  businessID      String? // Y-tunnus, Business Id
+  vendorVATNumber String? // ALV number (FI + business ID)
+
+  invoiceNumber   String?
+  referenceNumber String? // Finnish reference number (Viitenumero)
+
+  invoiceDate DateTime?
+  dueDate     DateTime?
+
+  paymentTermsDays Int? // e.g. 14 or 30 days
+
+  iban String? // vendor IBAN
+  bic  String? // bank BIC/SWIFT
+
+  // Billing (invoice recipient)
+
+  billingName       String?
+  billingAddress    String?
+  billingPostalCode String?
+  billingCity       String?
+  billingCountry    String?
+
+  deliveryDate String? // delivery date of the service/product
+
+  subtotalAmount Decimal? @db.Decimal(10, 2)
+  taxAmount      Decimal? @db.Decimal(10, 2)
+  totalAmount    Decimal? @db.Decimal(10, 2)
+
+  vatRate Decimal? @db.Decimal(5, 2) // e.g. 24, 14, 10
+
+  currency String @default("EUR")
+
+  notes    String?
+  status   String? // draft, sent, paid, overdue
+  paidDate DateTime?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("invoice")
 }

@@ -1,3 +1,4 @@
+
 "use client";
 
 import Dashboard from "@/app/dashboard/client/dashboard";

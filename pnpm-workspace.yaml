@@ -1,8 +1,9 @@
 ignoredBuiltDependencies:
-  - sharp
-  - unrs-resolver
 
 onlyBuiltDependencies:
-  - '@parcel/watcher'
-  - '@prisma/engines'
+  - "@parcel/watcher"
+  - "@prisma/engines"
   - prisma
+  - protobufjs
+  - sharp
+  - unrs-resolver
