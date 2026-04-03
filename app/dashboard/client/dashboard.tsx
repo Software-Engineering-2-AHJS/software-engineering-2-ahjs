@@ -1,140 +1,21 @@
 "use client";
-import { useState } from "react";
+import React, { useState, useRef } from "react";
 
+// --- TYPES ---
 type InvoiceStatus = "Approved" | "Draft" | "Processing";
 type InvoiceType = "Income" | "Expense";
 
-type Invoice = {
+interface Invoice {
   date: string;
   counterparty: string;
   type: InvoiceType;
   amount: number;
   total: number;
   status: InvoiceStatus;
-};
-
-type UploadInvoiceData = {
-  counterparty: string;
-  type: InvoiceType;
-  amount: number;
-  status: InvoiceStatus;
-};
-
-function UploadInvoiceModal({
-  open,
-  onClose,
-  onSubmit,
-}: {
-  open: boolean;
-  onClose: () => void;
-  onSubmit: (data: UploadInvoiceData) => void;
-}) {
-  const [counterparty, setCounterparty] = useState<string>("");
-  const [type, setType] = useState<InvoiceType>("Income");
-  const [amount, setAmount] = useState<string>("");
-  const [status, setStatus] = useState<InvoiceStatus>("Draft");
-
-  const canSubmit =
-    counterparty.trim().length > 0 &&
-    Number.isFinite(Number(amount)) &&
-    Number(amount) > 0;
-
-  if (!open) return null;
-
-  return (
-    <div className="modal-backdrop" role="dialog" aria-modal="true">
-      <div className="modal">
-        <div className="modal-header">
-          <h2 className="modal-title">Upload Invoice</h2>
-          <button type="button" className="button-secondary" onClick={onClose}>
-            Close
-          </button>
-        </div>
-
-        <form
-          className="form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (!canSubmit) return;
-
-            onSubmit({
-              counterparty: counterparty.trim(),
-              type,
-              amount: Number(amount),
-              status,
-            });
-
-            setCounterparty("");
-            setType("Income");
-            setAmount("");
-            setStatus("Draft");
-            onClose();
-          }}
-        >
-          <label className="field">
-            <span className="label">Counterparty</span>
-            <input
-              value={counterparty}
-              onChange={(e) => setCounterparty(e.target.value)}
-              placeholder="e.g. Acme Inc."
-              autoFocus
-            />
-          </label>
-
-          <div className="form-row">
-            <label className="field">
-              <span className="label">Type</span>
-              <select
-                value={type}
-                onChange={(e) => setType(e.target.value as InvoiceType)}
-              >
-                <option value="Income">Income</option>
-                <option value="Expense">Expense</option>
-              </select>
-            </label>
-
-            <label className="field">
-              <span className="label">Amount</span>
-              <input
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                inputMode="decimal"
-                placeholder="e.g. 250"
-              />
-            </label>
-          </div>
-
-          <label className="field">
-            <span className="label">Status</span>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value as InvoiceStatus)}
-            >
-              <option value="Approved">Approved</option>
-              <option value="Draft">Draft</option>
-              <option value="Processing">Processing</option>
-            </select>
-          </label>
-
-          <div className="form-actions">
-            <button type="submit" disabled={!canSubmit}>
-              Add invoice
-            </button>
-            <button
-              type="button"
-              className="button-secondary"
-              onClick={onClose}
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
 }
 
-const mockInvoices: Invoice[] = [
+// --- MOCK INITIAL DATA ---
+const MOCK_INVOICES: Invoice[] = [
   {
     date: "03/01/2026",
     counterparty: "Nordic Timber Oy",
@@ -159,177 +40,286 @@ const mockInvoices: Invoice[] = [
     total: 560,
     status: "Processing",
   },
-  {
-    date: "03/02/2026",
-    counterparty: "CloudHost Finland",
-    type: "Expense",
-    amount: 42,
-    total: 42,
-    status: "Draft",
-  },
-  {
-    date: "03/03/2026",
-    counterparty: "Arctic Design Studio",
-    type: "Income",
-    amount: 2100,
-    total: 2100,
-    status: "Approved",
-  },
-  {
-    date: "03/03/2026",
-    counterparty: "SteelFrame Logistics",
-    type: "Expense",
-    amount: 315.45,
-    total: 315.45,
-    status: "Processing",
-  },
-  {
-    date: "03/04/2026",
-    counterparty: "UEF Robotics Club",
-    type: "Income",
-    amount: 780,
-    total: 780,
-    status: "Draft",
-  },
-  {
-    date: "03/04/2026",
-    counterparty: "PrintLab North Karelia",
-    type: "Expense",
-    amount: 126.5,
-    total: 126.5,
-    status: "Approved",
-  },
-  {
-    date: "03/05/2026",
-    counterparty: "Karelia Event Group",
-    type: "Income",
-    amount: 3400,
-    total: 3400,
-    status: "Approved",
-  },
-  {
-    date: "03/05/2026",
-    counterparty: "ByteTax Solutions",
-    type: "Expense",
-    amount: 670,
-    total: 670,
-    status: "Processing",
-  },
-  {
-    date: "03/05/2026",
-    counterparty: "Studio Vantaa",
-    type: "Income",
-    amount: 980.25,
-    total: 980.25,
-    status: "Draft",
-  },
-  {
-    date: "03/06/2026",
-    counterparty: "Northern Freight",
-    type: "Expense",
-    amount: 149.99,
-    total: 149.99,
-    status: "Approved",
-  },
 ];
 
 export default function Dashboard() {
-  const [invoices, setInvoices] = useState<Invoice[]>(mockInvoices);
-  const [modalOpen, setModalOpen] = useState<boolean>(false);
-  const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
+  const [invoices, setInvoices] = useState<Invoice[]>(MOCK_INVOICES);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [currentView, setCurrentView] = useState<"dashboard" | "settings">(
+    "dashboard",
+  );
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
 
-  const addInvoice = (
-    counterparty: string,
-    type: InvoiceType,
-    amount: number,
-    status: InvoiceStatus,
-  ) => {
-    const today = new Date().toLocaleDateString();
+  // OCR & File Upload States
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [extractedData, setExtractedData] = useState<Invoice | null>(null);
 
-    const newInvoice: Invoice = {
-      date: today,
-      counterparty,
-      type,
-      amount,
-      total: amount,
-      status,
-    };
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-    setInvoices((prev) => [...prev, newInvoice]);
+  const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsProcessing(true);
+    setPreviewUrl(URL.createObjectURL(file));
+
+    setTimeout(() => {
+      setExtractedData({
+        date: new Date().toLocaleDateString(),
+        counterparty: "Auto-Extracted Corp",
+        type: "Expense",
+        amount: 250.0,
+        total: 250.0,
+        status: "Draft",
+      });
+      setIsProcessing(false);
+    }, 1500);
+  };
+
+  const handleSaveToLedger = () => {
+    if (extractedData) {
+      setInvoices((prev) => [extractedData, ...prev]);
+      setPreviewUrl(null);
+      setExtractedData(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleCancelOCR = () => {
+    setPreviewUrl(null);
+    setExtractedData(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   return (
-    <div className={`app ${sidebarOpen ? "sidebar-open" : "sidebar-closed"}`}>
-      <aside className={`sidebar ${sidebarOpen ? "open" : "closed"}`}>
-        <div className="sidebar-top-row">
-          <div className="logo">{sidebarOpen ? "EntryBase" : "EB"}</div>
+    <div className={`app ${theme}`}>
+      <header className="topbar">
+        <div className="topbar-left">
+          <div className="logo-group">
+            <div className="logo-mark">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                <rect width="32" height="32" rx="6" fill="#0747a6" />
+                <path
+                  d="M9 10H23M9 16H19M9 22H23"
+                  stroke="white"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </div>
+            <span className="brand-name">EntryBase</span>
+          </div>
+        </div>
+
+        <div className="topbar-right">
+          <div className="user-info">
+            <span className="welcome-text">Welcome, Josh </span>
+            <button className="logout-button">| Logout</button>
+          </div>
           <button
-            type="button"
-            className="sidebar-toggle"
-            onClick={() => setSidebarOpen((prev) => !prev)}
+            className="theme-toggle"
+            onClick={toggleTheme}
+            title="Toggle Theme"
           >
-            {sidebarOpen ? "←" : "→"}
+            {theme === "dark" ? "☀️" : "🌙"}
           </button>
         </div>
+      </header>
 
-        <nav>
-          <a className="active">Dashboard</a>
-          <a>Settings</a>
-        </nav>
-      </aside>
-
-      <main className="main">
-        <header className="topbar">
-          <div>Welcome, Josh 🫡</div>
-          <a href="#">Logout</a>
-        </header>
-
-        <div className="content">
-          <div className="content-header">
-            <h1>Invoices</h1>
-            <button type="button" onClick={() => setModalOpen(true)}>
-              + Upload Invoice
+      <div className="dashboard-body">
+        <aside className={`sidebar ${sidebarOpen ? "open" : "closed"}`}>
+          <div className="sidebar-header">
+            <button
+              type="button"
+              className="sidebar-toggle"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+            >
+              {sidebarOpen ? "←" : "→"}
             </button>
           </div>
+          <nav>
+            <a
+              href="#"
+              className={currentView === "dashboard" ? "active" : ""}
+              onClick={() => setCurrentView("dashboard")}
+            >
+              <span className="icon">⊞</span>
+              {sidebarOpen && <span>Dashboard</span>}
+            </a>
+            <a
+              href="#"
+              className={currentView === "settings" ? "active" : ""}
+              onClick={() => setCurrentView("settings")}
+            >
+              <span className="icon">⚙</span>
+              {sidebarOpen && <span>Settings</span>}
+            </a>
+          </nav>
+        </aside>
 
-          <table className="invoice-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Counterparty</th>
-                <th>Type</th>
-                <th>Amount</th>
-                <th>Total</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {invoices.map((invoice, idx) => (
-                <tr key={`${invoice.date}-${invoice.counterparty}-${idx}`}>
-                  <td>{invoice.date}</td>
-                  <td>{invoice.counterparty}</td>
-                  <td>{invoice.type}</td>
-                  <td>${invoice.amount.toFixed(2)}</td>
-                  <td>${invoice.total.toFixed(2)}</td>
-                  <td>
-                    <span className={`status ${invoice.status.toLowerCase()}`}>
-                      {invoice.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <main className="main">
+          <div className="content">
+            {currentView === "dashboard" ? (
+              <>
+                <div className="content-header">
+                  <h1>Invoices</h1>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    className="hidden-input"
+                    accept="image/*,.pdf"
+                  />
+                  <button
+                    type="button"
+                    className="upload-btn"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    + UPLOAD INVOICE
+                  </button>
+                </div>
+
+                <table className="invoice-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Counterparty</th>
+                      <th>Type</th>
+                      <th>Amount</th>
+                      <th>Total</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {invoices.map((inv, i) => (
+                      <tr key={i}>
+                        <td className="cell-date">{inv.date}</td>
+                        <td className="cell-counterparty">
+                          {inv.counterparty}
+                        </td>
+                        <td>
+                          <span
+                            className={`type-tag ${inv.type.toLowerCase()}`}
+                          >
+                            {inv.type}
+                          </span>
+                        </td>
+                        <td className={`cell-amount ${inv.type.toLowerCase()}`}>
+                          {inv.type === "Income" ? "+ " : "- "}$
+                          {inv.amount.toFixed(2)}
+                        </td>
+                        <td className="cell-total">${inv.total.toFixed(2)}</td>
+                        <td>
+                          <span
+                            className={`status-badge ${inv.status.toLowerCase()}`}
+                          >
+                            {inv.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </>
+            ) : (
+              <div className="content-header">
+                <h1>Settings</h1>
+              </div>
+            )}
+          </div>
+        </main>
+      </div>
+
+      {previewUrl && (
+        <div className="modal-backdrop">
+          <div className="ocr-modal">
+            <div className="ocr-preview-pane">
+              <header className="pane-header">Document Preview</header>
+              <iframe
+                src={previewUrl}
+                className="preview-frame"
+                title="Invoice Preview"
+              />
+            </div>
+
+            <div className="ocr-edit-pane">
+              <header className="pane-header">
+                Extracted Data{" "}
+                {isProcessing && (
+                  <span className="loader">⏳ processing...</span>
+                )}
+              </header>
+
+              <div className="edit-form">
+                <div className="field">
+                  <label>Counterparty</label>
+                  <input
+                    value={extractedData?.counterparty || ""}
+                    disabled={isProcessing}
+                    onChange={(e) =>
+                      setExtractedData((prev) =>
+                        prev ? { ...prev, counterparty: e.target.value } : null,
+                      )
+                    }
+                    placeholder="Scanning document..."
+                  />
+                </div>
+
+                <div className="field-row">
+                  <div className="field">
+                    <label>Amount</label>
+                    <input
+                      type="number"
+                      disabled={isProcessing}
+                      value={extractedData?.amount || 0}
+                      onChange={(e) =>
+                        setExtractedData((prev) =>
+                          prev
+                            ? { ...prev, amount: Number(e.target.value) }
+                            : null,
+                        )
+                      }
+                    />
+                  </div>
+                  <div className="field">
+                    <label>Type</label>
+                    <select
+                      value={extractedData?.type || "Expense"}
+                      disabled={isProcessing}
+                      onChange={(e) =>
+                        setExtractedData((prev) =>
+                          prev
+                            ? { ...prev, type: e.target.value as InvoiceType }
+                            : null,
+                        )
+                      }
+                    >
+                      <option value="Income">Income</option>
+                      <option value="Expense">Expense</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="actions">
+                <button className="button-secondary" onClick={handleCancelOCR}>
+                  Discard
+                </button>
+                <button
+                  className="button-primary"
+                  onClick={handleSaveToLedger}
+                  disabled={isProcessing}
+                >
+                  Save to Ledger
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-      </main>
-
-      <UploadInvoiceModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSubmit={({ counterparty, type, amount, status }) =>
-          addInvoice(counterparty, type, amount, status)
-        }
-      />
+      )}
     </div>
   );
 }
