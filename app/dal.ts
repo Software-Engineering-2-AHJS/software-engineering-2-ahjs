@@ -8,6 +8,33 @@ import { cache } from "react";
 
 import type { Prisma } from "@/app/generated/prisma/client";
 
+export const editInvoice = async ({
+  id,
+  vendorName,
+  type,
+  amount,
+  total,
+  status,
+}: {
+  id: string;
+  vendorName: string;
+  type: "INCOME" | "EXPENSE";
+  amount: string;
+  total: string;
+  status: string;
+}) => {
+  await prisma.invoice.update({
+    where: { id: id },
+    data: {
+      vendorName,
+      type,
+      subtotalAmount: amount,
+      totalAmount: total,
+      status,
+    },
+  });
+};
+
 /** DB shape for fields OCR / confirmation writes (matches `prisma/schema.prisma` Invoice). */
 export type InvoiceOcrFieldRow = {
   type: "INCOME" | "EXPENSE" | null;
@@ -122,7 +149,9 @@ function decimalToString(v: unknown): string | null {
   return String(v);
 }
 
-function mapInvoiceRowToExtracted(row: InvoiceOcrFieldRow): OcrExtractedInvoiceFields {
+function mapInvoiceRowToExtracted(
+  row: InvoiceOcrFieldRow,
+): OcrExtractedInvoiceFields {
   const t = row.type;
   return {
     type: t === "INCOME" || t === "EXPENSE" ? t : null,
@@ -165,7 +194,9 @@ export type InvoiceOcrReviewDbRow = InvoiceOcrFieldRow & {
 };
 
 /** Map DB row → review DTO (use after findFirst/findUnique with rawInvoice include). */
-export function toInvoiceOcrReviewDto(row: InvoiceOcrReviewDbRow): InvoiceOcrReviewDto {
+export function toInvoiceOcrReviewDto(
+  row: InvoiceOcrReviewDbRow,
+): InvoiceOcrReviewDto {
   return {
     id: row.id,
     userId: row.userId,
@@ -250,7 +281,7 @@ export const getInvoiceById = cache(
 
     if (!row) return null;
     return toInvoiceOcrReviewDto(row as InvoiceOcrReviewDbRow);
-  }
+  },
 );
 
 /**
@@ -306,5 +337,5 @@ export const getAccountantTaskQueue = cache(
       name: c.name,
       invoices: c.invoices.map(mapQueueInvoice),
     }));
-  }
+  },
 );
