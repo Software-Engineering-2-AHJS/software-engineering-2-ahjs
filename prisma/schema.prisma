@@ -41,7 +41,6 @@ model User {
 
   invoices Invoice[]
 
-
   @@unique([email])
   @@map("user")
 }
@@ -96,10 +95,27 @@ model Verification {
   @@map("verification")
 }
 
+enum RawInvoiceKind {
+  JPEG
+  PNG
+  PDF
+}
+
+model RawInvoice {
+  id String @id @default(cuid())
+
+  type     RawInvoiceKind
+  contents Bytes
+
+  invoice Invoice?
+}
+
 model Invoice {
   id         String @id @default(cuid())
-  fileUrl    String
   rawOcrData Json?
+
+  rawInvoice   RawInvoice @relation(fields: [rawInvoiceId], references: [id])
+  rawInvoiceId String     @unique
 
   type     EntryType? // Income or Expense??
   category String?
