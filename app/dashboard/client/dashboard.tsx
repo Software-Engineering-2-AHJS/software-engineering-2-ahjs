@@ -159,6 +159,21 @@ function EditInvoiceDetailsModal({
   open: boolean;
   onClose: () => void;
 }) {
+  const [date, setDate] = useState<string>("");
+  const [counterparty, setCounterparty] = useState<string>("");
+  const [type, setType] = useState<InvoiceType>("Income");
+  const [amount, setAmount] = useState<string>("");
+  const [total, setTotal] = useState<string>("");
+  const [status, setStatus] = useState<InvoiceStatus>("Draft");
+
+  const canSubmit =
+    date.trim().length > 0 &&
+    counterparty.trim().length > 0 &&
+    Number.isFinite(Number(amount)) &&
+    Number(amount) > 0 &&
+    Number.isFinite(Number(total)) &&
+    Number(total) > 0;
+
   if (!open) return null;
 
   return (
@@ -171,17 +186,89 @@ function EditInvoiceDetailsModal({
           </button>
         </div>
 
-        <div className="form">
-          <p>
-             the editing form
-              fields are yet to be added. Abeni, you maybe? 🤨
-          </p>
+        <form
+          className="form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!canSubmit) return;
+            onClose();
+          }}
+        >
+          <label className="field">
+            <span className="label">Date</span>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              autoFocus
+            />
+          </label>
+
+          <label className="field">
+            <span className="label">Counterparty</span>
+            <input
+              value={counterparty}
+              onChange={(e) => setCounterparty(e.target.value)}
+              placeholder="e.g. Acme Inc."
+            />
+          </label>
+
+          <div className="form-row">
+            <label className="field">
+              <span className="label">Type</span>
+              <select
+                value={type}
+                onChange={(e) => setType(e.target.value as InvoiceType)}
+              >
+                <option value="Income">Income</option>
+                <option value="Expense">Expense</option>
+              </select>
+            </label>
+
+            <label className="field">
+              <span className="label">Status</span>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value as InvoiceStatus)}
+              >
+                <option value="Approved">Approved</option>
+                <option value="Draft">Draft</option>
+                <option value="Processing">Processing</option>
+              </select>
+            </label>
+          </div>
+
+          <div className="form-row">
+            <label className="field">
+              <span className="label">Amount</span>
+              <input
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                inputMode="decimal"
+                placeholder="e.g. 250"
+              />
+            </label>
+
+            <label className="field">
+              <span className="label">Total</span>
+              <input
+                value={total}
+                onChange={(e) => setTotal(e.target.value)}
+                inputMode="decimal"
+                placeholder="e.g. 250"
+              />
+            </label>
+          </div>
+
           <div className="form-actions">
+            <button type="submit" disabled={!canSubmit}>
+              Save changes
+            </button>
             <button type="button" className="button-secondary" onClick={onClose}>
               Cancel
             </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );
