@@ -1,26 +1,34 @@
-// import { verifySession } from "@/app/dal";
-import prisma from "@/app/prisma";
-
-function doOCRStuff(rawInvoice: Uint8Array<ArrayBuffer>): object {
-  return {};
-}
+import { extractInvoiceFieldsFromPdf } from "@/app/lib/gemini";
 
 export async function POST(request: Request): Promise<Response> {
   const contents = await request.bytes();
+  const contentType = request.headers.get("content-type");
 
-  // TODO: Change PDF to detect filetype when we figure that out
-  await prisma.rawInvoice.create({
-    data: { contents, type: "PDF" },
-  });
+  if (contentType !== null && !contentType.includes("application/pdf")) {
+    return Response.json(
+      { error: "Only application/pdf uploads are supported" },
+      { status: 415 },
+    );
+  }
 
-  // save the data in database with prisma from result of doOCRStuff() on invoice
-  const ocrData = doOCRStuff(contents);
+  if (contents.length === 0) {
+    return Response.json({ error: "Request body is empty" }, { status: 400 });
+  }
 
-  return Response.json({ status: "ok" });
+  try {
+    const extracted = await extractInvoiceFieldsFromPdf(contents);
+    return Response.json({ status: "ok", extracted });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Invoice extraction failed";
+
+    return Response.json({ error: message }, { status: 502 });
+  }
 }
 
 export async function GET(): Promise<Response> {
-  const invoices = await prisma.invoice.findMany({ take: 10 });
-
-  return Response.json(invoices);
+  return Response.json({
+    status: "ok",
+    message: "POST a PDF with Content-Type: application/pdf to extract fields.",
+  });
 }
